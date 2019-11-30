@@ -1,0 +1,28 @@
+global:
+  # example: slack_api_url: https://hooks.slack.com/services/XXXXXXXX/XXXXXXXX/66XXXXXXBDvUM
+  slack_api_url: <SLACK API URL>
+receivers:
+- name: default-receiver
+  slack_configs:
+  - channel: '#channel-name'
+    color: '{{ (index .Alerts 0).Labels.color }}'
+    footer: '{{ (index .Alerts 0).Annotations.time }}'
+    send_resolved: false
+    text: |-
+      {{ range .Alerts }}{{ .Annotations.description }}
+      {{ end }}
+    title: '{{ (index .Alerts 0).Annotations.title }}'
+    title_link: '{{ (index .Alerts 0).Annotations.link }}'
+route:
+  receiver: default-receiver
+  routes:
+  - continue: false
+    group_by:
+    - app_kubernetes_io_name
+    - level
+    group_interval: 10m
+    group_wait: 0s
+    match:
+      severity: alertina
+    receiver: default-receiver
+    repeat_interval: 30m
